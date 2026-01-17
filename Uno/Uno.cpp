@@ -164,13 +164,49 @@ void initializeDeck(GameState& game) {
     }
 }
 
-// Shuffle the deck using random algorithm
+// Shuffle the deck
 void shuffleDeck(GameState& game) {
     random_device rd;
     mt19937 generator(rd());
-
-    // Use standard library shuffle algorithm
     shuffle(game.deck, game.deck + game.deckSize, generator);
+}
+
+// Deal starting cards to all players and set first discard card
+void dealCards(GameState& game) {
+    // Initialize all players
+    for (int p = 0; p < game.numPlayers; p++) {
+        game.players[p].cardCount = 0;
+        game.players[p].saidUno = false;
+
+        // Deal 7 cards to each player
+        for (int i = 0; i < STARTING_HAND_SIZE; i++) {
+            if (game.deckSize > 0) {
+                game.deckSize = game.deckSize - 1;
+                game.players[p].hand[game.players[p].cardCount] = game.deck[game.deckSize];
+                game.players[p].cardCount = game.players[p].cardCount + 1;
+            }
+        }
+    }
+
+    // Place first card on discard pile
+    game.discardSize = 0;
+    if (game.deckSize > 0) {
+        game.deckSize = game.deckSize - 1;
+        game.discardPile[game.discardSize] = game.deck[game.deckSize];
+        game.discardSize = game.discardSize + 1;
+    }
+}
+
+// Print all cards in a player's hand
+void printPlayerHand(const GameState& game, int playerIndex) {
+    cout << "Player " << (playerIndex + 1) << " - Your cards:\n";
+
+    for (int i = 0; i < game.players[playerIndex].cardCount; i++) {
+        cout << "[" << i << "] ";
+        printCard(game.players[playerIndex].hand[i]);
+        cout << " ";
+    }
+    cout << "\n";
 }
 
 int main() {
@@ -178,24 +214,26 @@ int main() {
 
     GameState game;
     game.deckSize = 0;
+    game.discardSize = 0;
+    game.numPlayers = 3;
+    game.currentPlayer = 0;
+    game.clockwise = true;
 
     initializeDeck(game);
+    shuffleDeck(game);
+    dealCards(game);
 
-    cout << "Before shuffle - First 10 cards:\n";
-    for (int i = 0; i < 10; i++) {
-        printCard(game.deck[i]);
-        cout << " ";
-    }
+    cout << "=== UNO Game - Cards Dealt ===\n\n";
+    cout << "Starting card: ";
+    printCard(game.discardPile[0]);
     cout << "\n\n";
 
-    shuffleDeck(game);
-
-    cout << "After shuffle - First 10 cards:\n";
-    for (int i = 0; i < 10; i++) {
-        printCard(game.deck[i]);
-        cout << " ";
+    for (int p = 0; p < game.numPlayers; p++) {
+        printPlayerHand(game, p);
+        cout << "\n";
     }
-    cout << "\n";
+
+    cout << "Cards remaining in deck: " << game.deckSize << "\n";
 
     return 0;
 }
