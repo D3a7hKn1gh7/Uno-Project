@@ -38,7 +38,33 @@ struct Card {
     int value;  // 0-9 for numbers, 10=Skip, 11=Reverse, 12=+2, 13=Wild, 14=Wild+4
 };
 
+// Player structure - stores each player's hand and state
+struct Player {
+    Card hand[MAX_HAND_SIZE];  // Cards in player's hand
+    int cardCount;              // Number of cards currently held
+    bool saidUno;               // Whether player declared UNO
+};
+
+// GameState structure - stores all game data
+struct GameState {
+    Card deck[MAX_DECK_SIZE];           // Draw pile
+    int deckSize;                        // Number of cards in deck
+    Card discardPile[MAX_DECK_SIZE];    // Played cards pile
+    int discardSize;                     // Number of cards in discard pile
+    Player players[MAX_PLAYERS];         // All players
+    int numPlayers;                      // Number of players in game
+    int currentPlayer;                   // Index of current player
+    bool clockwise;                      // Direction of play
+};
+
 int main() {
-    cout << "UNO Game - Structures Defined\n";
+    GameState game;
+    game.numPlayers = 0;
+    game.deckSize = 0;
+    game.discardSize = 0;
+    game.currentPlayer = 0;
+    game.clockwise = true;
+
+    cout << "UNO Game - Game State Initialized\n";
     return 0;
 }
