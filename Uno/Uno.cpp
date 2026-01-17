@@ -6,6 +6,9 @@
 */
 
 #include <iostream>
+#include <algorithm>
+#include <random>
+#include <ctime>
 
 using namespace std;
 
@@ -116,14 +119,11 @@ void printCard(const Card& card) {
 void initializeDeck(GameState& game) {
     game.deckSize = 0;
 
-    // For each of the 4 colors (Red, Green, Blue, Yellow)
     for (int color = COLOR_RED; color <= COLOR_YELLOW; color++) {
-        // Add one 0 card per color
         game.deck[game.deckSize].color = color;
         game.deck[game.deckSize].value = 0;
         game.deckSize = game.deckSize + 1;
 
-        // Add two cards of each value 1-9
         for (int value = 1; value <= 9; value++) {
             for (int copy = 0; copy < 2; copy++) {
                 game.deck[game.deckSize].color = color;
@@ -132,21 +132,18 @@ void initializeDeck(GameState& game) {
             }
         }
 
-        // Add two Skip cards
         for (int copy = 0; copy < 2; copy++) {
             game.deck[game.deckSize].color = color;
             game.deck[game.deckSize].value = VALUE_SKIP;
             game.deckSize = game.deckSize + 1;
         }
 
-        // Add two Reverse cards
         for (int copy = 0; copy < 2; copy++) {
             game.deck[game.deckSize].color = color;
             game.deck[game.deckSize].value = VALUE_REVERSE;
             game.deckSize = game.deckSize + 1;
         }
 
-        // Add two Draw Two cards
         for (int copy = 0; copy < 2; copy++) {
             game.deck[game.deckSize].color = color;
             game.deck[game.deckSize].value = VALUE_DRAW_TWO;
@@ -154,14 +151,12 @@ void initializeDeck(GameState& game) {
         }
     }
 
-    // Add 4 Wild cards
     for (int i = 0; i < 4; i++) {
         game.deck[game.deckSize].color = COLOR_WILD;
         game.deck[game.deckSize].value = VALUE_WILD;
         game.deckSize = game.deckSize + 1;
     }
 
-    // Add 4 Wild Draw Four cards
     for (int i = 0; i < 4; i++) {
         game.deck[game.deckSize].color = COLOR_WILD;
         game.deck[game.deckSize].value = VALUE_WILD_DRAW_FOUR;
@@ -169,15 +164,33 @@ void initializeDeck(GameState& game) {
     }
 }
 
+// Shuffle the deck using random algorithm
+void shuffleDeck(GameState& game) {
+    random_device rd;
+    mt19937 generator(rd());
+
+    // Use standard library shuffle algorithm
+    shuffle(game.deck, game.deck + game.deckSize, generator);
+}
+
 int main() {
+    srand(time(0));
+
     GameState game;
     game.deckSize = 0;
 
     initializeDeck(game);
 
-    cout << "Deck initialized with " << game.deckSize << " cards\n";
-    cout << "First 10 cards:\n";
+    cout << "Before shuffle - First 10 cards:\n";
+    for (int i = 0; i < 10; i++) {
+        printCard(game.deck[i]);
+        cout << " ";
+    }
+    cout << "\n\n";
 
+    shuffleDeck(game);
+
+    cout << "After shuffle - First 10 cards:\n";
     for (int i = 0; i < 10; i++) {
         printCard(game.deck[i]);
         cout << " ";
