@@ -54,7 +54,7 @@ struct GameState {
     bool clockwise;
 };
 
-// Convert color integer to character representation
+// Convert color integer to character
 char getColorChar(int color) {
     if (color == COLOR_RED) {
         return 'R';
@@ -88,7 +88,7 @@ int getColorFromChar(char c) {
     return COLOR_WILD;
 }
 
-// Print a single card to console
+// Print a single card
 void printCard(const Card& card) {
     cout << getColorChar(card.color);
 
@@ -112,14 +112,76 @@ void printCard(const Card& card) {
     }
 }
 
-int main() {
-    // Test card printing
-    Card testCard;
-    testCard.color = COLOR_RED;
-    testCard.value = 5;
+// Initialize deck with all 108 UNO cards
+void initializeDeck(GameState& game) {
+    game.deckSize = 0;
 
-    cout << "Test card: ";
-    printCard(testCard);
+    // For each of the 4 colors (Red, Green, Blue, Yellow)
+    for (int color = COLOR_RED; color <= COLOR_YELLOW; color++) {
+        // Add one 0 card per color
+        game.deck[game.deckSize].color = color;
+        game.deck[game.deckSize].value = 0;
+        game.deckSize = game.deckSize + 1;
+
+        // Add two cards of each value 1-9
+        for (int value = 1; value <= 9; value++) {
+            for (int copy = 0; copy < 2; copy++) {
+                game.deck[game.deckSize].color = color;
+                game.deck[game.deckSize].value = value;
+                game.deckSize = game.deckSize + 1;
+            }
+        }
+
+        // Add two Skip cards
+        for (int copy = 0; copy < 2; copy++) {
+            game.deck[game.deckSize].color = color;
+            game.deck[game.deckSize].value = VALUE_SKIP;
+            game.deckSize = game.deckSize + 1;
+        }
+
+        // Add two Reverse cards
+        for (int copy = 0; copy < 2; copy++) {
+            game.deck[game.deckSize].color = color;
+            game.deck[game.deckSize].value = VALUE_REVERSE;
+            game.deckSize = game.deckSize + 1;
+        }
+
+        // Add two Draw Two cards
+        for (int copy = 0; copy < 2; copy++) {
+            game.deck[game.deckSize].color = color;
+            game.deck[game.deckSize].value = VALUE_DRAW_TWO;
+            game.deckSize = game.deckSize + 1;
+        }
+    }
+
+    // Add 4 Wild cards
+    for (int i = 0; i < 4; i++) {
+        game.deck[game.deckSize].color = COLOR_WILD;
+        game.deck[game.deckSize].value = VALUE_WILD;
+        game.deckSize = game.deckSize + 1;
+    }
+
+    // Add 4 Wild Draw Four cards
+    for (int i = 0; i < 4; i++) {
+        game.deck[game.deckSize].color = COLOR_WILD;
+        game.deck[game.deckSize].value = VALUE_WILD_DRAW_FOUR;
+        game.deckSize = game.deckSize + 1;
+    }
+}
+
+int main() {
+    GameState game;
+    game.deckSize = 0;
+
+    initializeDeck(game);
+
+    cout << "Deck initialized with " << game.deckSize << " cards\n";
+    cout << "First 10 cards:\n";
+
+    for (int i = 0; i < 10; i++) {
+        printCard(game.deck[i]);
+        cout << " ";
+    }
     cout << "\n";
 
     return 0;
