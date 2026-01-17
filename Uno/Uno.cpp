@@ -14,9 +14,6 @@ const int MAX_PLAYERS = 4;
 const int MAX_DECK_SIZE = 108;
 const int MAX_HAND_SIZE = 50;
 const int STARTING_HAND_SIZE = 7;
-const int CARDS_PER_COLOR = 25;
-const int NUM_COLORS = 4;
-const int NUM_WILD_CARDS = 4;
 
 // Card colors
 const int COLOR_RED = 0;
@@ -32,39 +29,98 @@ const int VALUE_DRAW_TWO = 12;
 const int VALUE_WILD = 13;
 const int VALUE_WILD_DRAW_FOUR = 14;
 
-// Card structure - stores color and value of each card
+// Card structure
 struct Card {
-    int color;  // 0=Red, 1=Green, 2=Blue, 3=Yellow, 4=Wild
-    int value;  // 0-9 for numbers, 10=Skip, 11=Reverse, 12=+2, 13=Wild, 14=Wild+4
+    int color;
+    int value;
 };
 
-// Player structure - stores each player's hand and state
+// Player structure
 struct Player {
-    Card hand[MAX_HAND_SIZE];  // Cards in player's hand
-    int cardCount;              // Number of cards currently held
-    bool saidUno;               // Whether player declared UNO
+    Card hand[MAX_HAND_SIZE];
+    int cardCount;
+    bool saidUno;
 };
 
-// GameState structure - stores all game data
+// GameState structure
 struct GameState {
-    Card deck[MAX_DECK_SIZE];           // Draw pile
-    int deckSize;                        // Number of cards in deck
-    Card discardPile[MAX_DECK_SIZE];    // Played cards pile
-    int discardSize;                     // Number of cards in discard pile
-    Player players[MAX_PLAYERS];         // All players
-    int numPlayers;                      // Number of players in game
-    int currentPlayer;                   // Index of current player
-    bool clockwise;                      // Direction of play
+    Card deck[MAX_DECK_SIZE];
+    int deckSize;
+    Card discardPile[MAX_DECK_SIZE];
+    int discardSize;
+    Player players[MAX_PLAYERS];
+    int numPlayers;
+    int currentPlayer;
+    bool clockwise;
 };
+
+// Convert color integer to character representation
+char getColorChar(int color) {
+    if (color == COLOR_RED) {
+        return 'R';
+    }
+    if (color == COLOR_GREEN) {
+        return 'G';
+    }
+    if (color == COLOR_BLUE) {
+        return 'B';
+    }
+    if (color == COLOR_YELLOW) {
+        return 'Y';
+    }
+    return 'W';
+}
+
+// Convert character to color integer
+int getColorFromChar(char c) {
+    if (c == 'R' || c == 'r') {
+        return COLOR_RED;
+    }
+    if (c == 'G' || c == 'g') {
+        return COLOR_GREEN;
+    }
+    if (c == 'B' || c == 'b') {
+        return COLOR_BLUE;
+    }
+    if (c == 'Y' || c == 'y') {
+        return COLOR_YELLOW;
+    }
+    return COLOR_WILD;
+}
+
+// Print a single card to console
+void printCard(const Card& card) {
+    cout << getColorChar(card.color);
+
+    if (card.value <= 9) {
+        cout << card.value;
+    }
+    else if (card.value == VALUE_SKIP) {
+        cout << "Skip";
+    }
+    else if (card.value == VALUE_REVERSE) {
+        cout << "Rev";
+    }
+    else if (card.value == VALUE_DRAW_TWO) {
+        cout << "+2";
+    }
+    else if (card.value == VALUE_WILD) {
+        cout << "ild";
+    }
+    else if (card.value == VALUE_WILD_DRAW_FOUR) {
+        cout << "+4";
+    }
+}
 
 int main() {
-    GameState game;
-    game.numPlayers = 0;
-    game.deckSize = 0;
-    game.discardSize = 0;
-    game.currentPlayer = 0;
-    game.clockwise = true;
+    // Test card printing
+    Card testCard;
+    testCard.color = COLOR_RED;
+    testCard.value = 5;
 
-    cout << "UNO Game - Game State Initialized\n";
+    cout << "Test card: ";
+    printCard(testCard);
+    cout << "\n";
+
     return 0;
 }
