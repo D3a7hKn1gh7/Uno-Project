@@ -58,7 +58,26 @@ struct GameState {
     bool clockwise;
 };
 
-// Convert color integer to character
+void initializeDeck(GameState& game);
+void shuffleDeck(GameState& game);
+void dealCards(GameState& game);
+void printCard(const Card& card);
+void printPlayerHand(const GameState& game, int playerIndex);
+bool isValidPlay(const Card& card, const Card& topCard);
+void drawCard(GameState& game, int playerIndex);
+int getNextPlayer(const GameState& game);
+void applyCardEffect(GameState& game, const Card& card);
+void playCard(GameState& game, int playerIndex, int cardIndex);
+bool readIntegerInput(int& result);
+void playerTurn(GameState& game);
+void saveGame(const GameState& game);
+bool loadGame(GameState& game);
+void playGame(GameState& game);
+void displayMenu();
+char getColorChar(int color);
+int getColorFromChar(char c);
+
+// Convert color integer to character 
 char getColorChar(int color) {
     if (color == COLOR_RED) {
         return 'R';
@@ -120,11 +139,14 @@ void printCard(const Card& card) {
 void initializeDeck(GameState& game) {
     game.deckSize = 0;
 
+    // For each of the 4 colors (Red, Green, Blue, Yellow)
     for (int color = COLOR_RED; color <= COLOR_YELLOW; color++) {
+        // Add one 0 card per color
         game.deck[game.deckSize].color = color;
         game.deck[game.deckSize].value = 0;
         game.deckSize = game.deckSize + 1;
 
+        // Add two cards of each value 1-9
         for (int value = 1; value <= 9; value++) {
             for (int copy = 0; copy < 2; copy++) {
                 game.deck[game.deckSize].color = color;
@@ -133,18 +155,21 @@ void initializeDeck(GameState& game) {
             }
         }
 
+        // Add two Skip cards per color
         for (int copy = 0; copy < 2; copy++) {
             game.deck[game.deckSize].color = color;
             game.deck[game.deckSize].value = VALUE_SKIP;
             game.deckSize = game.deckSize + 1;
         }
 
+        // Add two Reverse cards per color
         for (int copy = 0; copy < 2; copy++) {
             game.deck[game.deckSize].color = color;
             game.deck[game.deckSize].value = VALUE_REVERSE;
             game.deckSize = game.deckSize + 1;
         }
 
+        // Add two Draw Two cards per color
         for (int copy = 0; copy < 2; copy++) {
             game.deck[game.deckSize].color = color;
             game.deck[game.deckSize].value = VALUE_DRAW_TWO;
@@ -152,12 +177,14 @@ void initializeDeck(GameState& game) {
         }
     }
 
+    // Add 4 Wild cards
     for (int i = 0; i < 4; i++) {
         game.deck[game.deckSize].color = COLOR_WILD;
         game.deck[game.deckSize].value = VALUE_WILD;
         game.deckSize = game.deckSize + 1;
     }
 
+    // Add 4 Wild Draw Four cards
     for (int i = 0; i < 4; i++) {
         game.deck[game.deckSize].color = COLOR_WILD;
         game.deck[game.deckSize].value = VALUE_WILD_DRAW_FOUR;
@@ -169,15 +196,19 @@ void initializeDeck(GameState& game) {
 void shuffleDeck(GameState& game) {
     random_device rd;
     mt19937 generator(rd());
+
+    // Use standard library shuffle algorithm
     shuffle(game.deck, game.deck + game.deckSize, generator);
 }
 
 // Deal starting cards to all players and set first discard card
 void dealCards(GameState& game) {
+    // Initialize all players
     for (int p = 0; p < game.numPlayers; p++) {
         game.players[p].cardCount = 0;
         game.players[p].saidUno = false;
 
+        // Deal 7 cards to each player
         for (int i = 0; i < STARTING_HAND_SIZE; i++) {
             if (game.deckSize > 0) {
                 game.deckSize = game.deckSize - 1;
@@ -187,6 +218,7 @@ void dealCards(GameState& game) {
         }
     }
 
+    // Place first card on discard pile
     game.discardSize = 0;
     if (game.deckSize > 0) {
         game.deckSize = game.deckSize - 1;
@@ -209,14 +241,17 @@ void printPlayerHand(const GameState& game, int playerIndex) {
 
 // Check if a card can be played on top of another card
 bool isValidPlay(const Card& card, const Card& topCard) {
+    // Wild cards can always be played
     if (card.color == COLOR_WILD) {
         return true;
     }
 
+    // Card matches by color
     if (card.color == topCard.color) {
         return true;
     }
 
+    // Card matches by value
     if (card.value == topCard.value) {
         return true;
     }
@@ -226,20 +261,25 @@ bool isValidPlay(const Card& card, const Card& topCard) {
 
 // Draw one card from deck for a player
 void drawCard(GameState& game, int playerIndex) {
+    // Check if deck is empty - reshuffle discard pile
     if (game.deckSize == 0) {
         cout << "Deck empty! Reshuffling discard pile...\n";
 
+        // Move all cards except top card from discard to deck
         for (int i = 0; i < game.discardSize - 1; i++) {
             game.deck[game.deckSize] = game.discardPile[i];
             game.deckSize = game.deckSize + 1;
         }
 
+        // Keep only top card in discard pile
         game.discardPile[0] = game.discardPile[game.discardSize - 1];
         game.discardSize = 1;
 
+        // Shuffle the deck
         shuffleDeck(game);
     }
 
+    // Draw card if deck has cards and player has space
     if (game.deckSize > 0 && game.players[playerIndex].cardCount < MAX_HAND_SIZE) {
         game.deckSize = game.deckSize - 1;
         game.players[playerIndex].hand[game.players[playerIndex].cardCount] = game.deck[game.deckSize];
@@ -271,6 +311,7 @@ void applyCardEffect(GameState& game, const Card& card) {
         game.clockwise = !game.clockwise;
         cout << "Reverse! Direction changed!\n";
 
+        // In 2-player game, Reverse acts like Skip
         if (game.numPlayers == 2) {
             game.currentPlayer = getNextPlayer(game);
         }
@@ -281,6 +322,7 @@ void applyCardEffect(GameState& game, const Card& card) {
 
         drawCard(game, nextPlayer);
         drawCard(game, nextPlayer);
+
     }
     else if (card.value == VALUE_WILD_DRAW_FOUR) {
         int nextPlayer = getNextPlayer(game);
@@ -289,6 +331,7 @@ void applyCardEffect(GameState& game, const Card& card) {
         for (int i = 0; i < 4; i++) {
             drawCard(game, nextPlayer);
         }
+
     }
 }
 
@@ -296,9 +339,11 @@ void applyCardEffect(GameState& game, const Card& card) {
 void playCard(GameState& game, int playerIndex, int cardIndex) {
     Card playedCard = game.players[playerIndex].hand[cardIndex];
 
+    // Add card to discard pile
     game.discardPile[game.discardSize] = playedCard;
     game.discardSize = game.discardSize + 1;
 
+    // Remove card from player's hand by shifting remaining cards
     for (int i = cardIndex; i < game.players[playerIndex].cardCount - 1; i++) {
         game.players[playerIndex].hand[i] = game.players[playerIndex].hand[i + 1];
     }
@@ -308,16 +353,20 @@ void playCard(GameState& game, int playerIndex, int cardIndex) {
     printCard(playedCard);
     cout << "\n";
 
+    // Handle Wild cards - player chooses new color
     if (playedCard.color == COLOR_WILD) {
         cout << "Choose new color (R/G/B/Y): ";
         char colorChoice;
         cin >> colorChoice;
 
+        // Convert to color integer (case insensitive)
         game.discardPile[game.discardSize - 1].color = getColorFromChar(colorChoice);
     }
 
+    // Apply special card effects
     applyCardEffect(game, playedCard);
 
+    // Reset UNO declaration
     game.players[playerIndex].saidUno = false;
 }
 
@@ -327,12 +376,14 @@ bool readIntegerInput(int& result) {
         return true;
     }
     else {
-        cin.clear(); //clear the error state of cin
-        cin.ignore(10000, '\n'); //ignore the invalid input in the buffer
+        
+        cin.clear(); // Clear the error state of cin
+        cin.ignore(10000, '\n'); // Ignore the invalid input in the buffer 
         return false;
     }
 }
 
+// Execute one player's turn
 void playerTurn(GameState& game) {
     int currentPlayerIdx = game.currentPlayer;
     Card topCard = game.discardPile[game.discardSize - 1];
@@ -401,14 +452,14 @@ void playerTurn(GameState& game) {
     cout << "Choose card index (or -1 to save game): ";
     int choice;
 
-    // Save game option
-    if (choice == -1) {
-        saveGame(game);
+    if (!readIntegerInput(choice)) {
+        cout << "Invalid input! Please enter a number.\n";
         return;
     }
 
-    if (!readIntegerInput(choice)) {
-        cout << "Invalid input! Please enter a number.\n";
+    // Save game option
+    if (choice == -1) {
+        saveGame(game);
         return;
     }
 
@@ -429,36 +480,36 @@ void playerTurn(GameState& game) {
 // Save current game state to file
 void saveGame(const GameState& game) {
     ofstream file("uno_save.txt");
-    
+
     if (!file.is_open()) {
         cout << "Error: Could not save game!\n";
         return;
     }
-    
+
     // Save game state
     file << game.numPlayers << " " << game.currentPlayer << " " << game.clockwise << "\n";
-    
+
     // Save deck
     file << game.deckSize << "\n";
     for (int i = 0; i < game.deckSize; i++) {
         file << game.deck[i].color << " " << game.deck[i].value << "\n";
     }
-    
+
     // Save discard pile
     file << game.discardSize << "\n";
     for (int i = 0; i < game.discardSize; i++) {
         file << game.discardPile[i].color << " " << game.discardPile[i].value << "\n";
     }
-    
+
     // Save players
     for (int p = 0; p < game.numPlayers; p++) {
         file << game.players[p].cardCount << " " << game.players[p].saidUno << "\n";
-        
+
         for (int i = 0; i < game.players[p].cardCount; i++) {
             file << game.players[p].hand[i].color << " " << game.players[p].hand[i].value << "\n";
         }
     }
-    
+
     file.close();
     cout << "Game saved successfully!\n";
 }
