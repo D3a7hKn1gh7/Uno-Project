@@ -6,6 +6,7 @@
 */
 
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <random>
 #include <ctime>
@@ -377,9 +378,34 @@ void playerTurn(GameState& game) {
         return;
     }
 
+    // Check if player has exactly 1 card - must declare UNO
+    if (game.players[currentPlayerIdx].cardCount == 1) {
+        cout << "You have 1 card left! Type 'uno' to declare UNO: ";
+        char unoInput[10];
+        cin >> unoInput;
+
+        // Check if input is exactly "uno"
+        bool isUno = (unoInput[0] == 'u' && unoInput[1] == 'n' && unoInput[2] == 'o' && unoInput[3] == '\0');
+
+        if (isUno) {
+            game.players[currentPlayerIdx].saidUno = true;
+            cout << "UNO declared!\n";
+        }
+        else {
+            cout << "You forgot to say UNO! Drawing penalty card...\n";
+            drawCard(game, currentPlayerIdx);
+        }
+    }
+
     // Player has valid cards - let them choose
-    cout << "Choose card index: ";
+    cout << "Choose card index (or -1 to save game): ";
     int choice;
+
+    // Save game option
+    if (choice == -1) {
+        saveGame(game);
+        return;
+    }
 
     if (!readIntegerInput(choice)) {
         cout << "Invalid input! Please enter a number.\n";
@@ -398,6 +424,43 @@ void playerTurn(GameState& game) {
 
     playCard(game, currentPlayerIdx, choice);
     game.currentPlayer = getNextPlayer(game);
+}
+
+// Save current game state to file
+void saveGame(const GameState& game) {
+    ofstream file("uno_save.txt");
+    
+    if (!file.is_open()) {
+        cout << "Error: Could not save game!\n";
+        return;
+    }
+    
+    // Save game state
+    file << game.numPlayers << " " << game.currentPlayer << " " << game.clockwise << "\n";
+    
+    // Save deck
+    file << game.deckSize << "\n";
+    for (int i = 0; i < game.deckSize; i++) {
+        file << game.deck[i].color << " " << game.deck[i].value << "\n";
+    }
+    
+    // Save discard pile
+    file << game.discardSize << "\n";
+    for (int i = 0; i < game.discardSize; i++) {
+        file << game.discardPile[i].color << " " << game.discardPile[i].value << "\n";
+    }
+    
+    // Save players
+    for (int p = 0; p < game.numPlayers; p++) {
+        file << game.players[p].cardCount << " " << game.players[p].saidUno << "\n";
+        
+        for (int i = 0; i < game.players[p].cardCount; i++) {
+            file << game.players[p].hand[i].color << " " << game.players[p].hand[i].value << "\n";
+        }
+    }
+    
+    file.close();
+    cout << "Game saved successfully!\n";
 }
 
 int main() {
