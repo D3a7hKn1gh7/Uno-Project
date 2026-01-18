@@ -1,7 +1,15 @@
-/*
-* Angel Pisarev group 2
-* 3MI0600689
-* GCC
+/**
+* Solution to course project # 4
+* Introduction to programming course
+* Faculty of Mathematics and Informatics of Sofia University
+* Winter semester 2025/2026
+* 
+* @author Angel Pisarev
+* @idnumber 3MI0600689
+* @compiler Visual Studio - VC
+* 
+* Main file containing UNO game logic
+* 
 */
 
 #include <iostream>
