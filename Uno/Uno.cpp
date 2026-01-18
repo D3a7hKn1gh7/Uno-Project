@@ -501,6 +501,36 @@ bool loadGame(GameState& game) {
     return true;
 }
 
+// Main game loop
+void playGame(GameState& game) {
+    while (true) {
+        // Check for winner
+        for (int i = 0; i < game.numPlayers; i++) {
+            if (game.players[i].cardCount == 0) {
+                cout << "\n****************************************\n";
+                cout << "*** Player " << (i + 1) << " wins the game! ***\n";
+                cout << "****************************************\n";
+                return;
+            }
+        }
+
+        // Execute current player's turn
+        playerTurn(game);
+    }
+}
+
+// Display main menu
+void displayMenu() {
+    cout << "\n====================================\n";
+    cout << "           UNO GAME\n";
+    cout << "====================================\n";
+    cout << "1. New Game\n";
+    cout << "2. Continue Game\n";
+    cout << "3. Exit\n";
+    cout << "====================================\n";
+    cout << "Choose option: ";
+}
+
 int main() {
     srand(time(0));
 
