@@ -334,22 +334,24 @@ void applyCardEffect(GameState& game, const Card& card) {
     }
     else if (card.value == VALUE_DRAW_TWO) {
         int nextPlayer = getNextPlayer(game);
-        cout << "Player " << (nextPlayer + 1) << " draws 2 cards!\n";
+        cout << "Player " << (nextPlayer + 1) << " draws 2 cards and misses their turn!\n";
 
         drawCard(game, nextPlayer);
         drawCard(game, nextPlayer);
 
-        //Player does NOT skip turn after drawing
+        // Player skips their turn after drawing
+        game.currentPlayer = nextPlayer;
     }
     else if (card.value == VALUE_WILD_DRAW_FOUR) {
         int nextPlayer = getNextPlayer(game);
-        cout << "Player " << (nextPlayer + 1) << " draws 4 cards!\n";
+        cout << "Player " << (nextPlayer + 1) << " draws 4 cards and misses their turn!\n";
 
         for (int i = 0; i < 4; i++) {
             drawCard(game, nextPlayer);
         }
 
-        //Player does NOT skip turn after drawing
+        // Player skips their turn after drawing
+        game.currentPlayer = nextPlayer;
     }
 }
 
