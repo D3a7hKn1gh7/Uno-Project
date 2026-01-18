@@ -463,6 +463,44 @@ void saveGame(const GameState& game) {
     cout << "Game saved successfully!\n";
 }
 
+// Load game state from file
+bool loadGame(GameState& game) {
+    ifstream file("uno_save.txt");
+
+    if (!file.is_open()) {
+        cout << "No saved game found!\n";
+        return false;
+    }
+
+    // Load game state
+    file >> game.numPlayers >> game.currentPlayer >> game.clockwise;
+
+    // Load deck
+    file >> game.deckSize;
+    for (int i = 0; i < game.deckSize; i++) {
+        file >> game.deck[i].color >> game.deck[i].value;
+    }
+
+    // Load discard pile
+    file >> game.discardSize;
+    for (int i = 0; i < game.discardSize; i++) {
+        file >> game.discardPile[i].color >> game.discardPile[i].value;
+    }
+
+    // Load players
+    for (int p = 0; p < game.numPlayers; p++) {
+        file >> game.players[p].cardCount >> game.players[p].saidUno;
+
+        for (int i = 0; i < game.players[p].cardCount; i++) {
+            file >> game.players[p].hand[i].color >> game.players[p].hand[i].value;
+        }
+    }
+
+    file.close();
+    cout << "Game loaded successfully!\n";
+    return true;
+}
+
 int main() {
     srand(time(0));
 
