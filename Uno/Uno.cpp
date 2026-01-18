@@ -295,11 +295,9 @@ void applyCardEffect(GameState& game, const Card& card) {
 void playCard(GameState& game, int playerIndex, int cardIndex) {
     Card playedCard = game.players[playerIndex].hand[cardIndex];
 
-    // Add card to discard pile
     game.discardPile[game.discardSize] = playedCard;
     game.discardSize = game.discardSize + 1;
 
-    // Remove card from player's hand by shifting remaining cards
     for (int i = cardIndex; i < game.players[playerIndex].cardCount - 1; i++) {
         game.players[playerIndex].hand[i] = game.players[playerIndex].hand[i + 1];
     }
@@ -309,63 +307,52 @@ void playCard(GameState& game, int playerIndex, int cardIndex) {
     printCard(playedCard);
     cout << "\n";
 
-    // Handle Wild cards - player chooses new color
     if (playedCard.color == COLOR_WILD) {
         cout << "Choose new color (R/G/B/Y): ";
         char colorChoice;
         cin >> colorChoice;
 
-        // Convert to color integer (case insensitive)
         game.discardPile[game.discardSize - 1].color = getColorFromChar(colorChoice);
     }
 
-    // Apply special card effects
     applyCardEffect(game, playedCard);
 
-    // Reset UNO declaration
     game.players[playerIndex].saidUno = false;
+}
+
+// Safely read integer input with validation
+bool readIntegerInput(int& result) {
+    if (cin >> result) {
+        return true;
+    }
+    else {
+        cin.clear(); //clear the error state of cin
+        cin.ignore(10000, '\n'); //ignore the invalid input in the buffer
+        return false;
+    }
 }
 
 int main() {
     srand(time(0));
 
-    GameState game;
-    game.deckSize = 0;
-    game.discardSize = 0;
-    game.numPlayers = 2;
-    game.currentPlayer = 0;
-    game.clockwise = true;
+    cout << "=== Input Validation Test ===\n\n";
 
-    initializeDeck(game);
-    shuffleDeck(game);
-    dealCards(game);
+    cout << "Enter an integer: ";
+    int num;
 
-    cout << "=== Play Card Test ===\n\n";
-    cout << "Top card: ";
-    printCard(game.discardPile[0]);
-    cout << "\n\n";
-
-    printPlayerHand(game, 0);
-
-    // Find first valid card
-    int validCardIndex = -1;
-    for (int i = 0; i < game.players[0].cardCount; i++) {
-        if (isValidPlay(game.players[0].hand[i], game.discardPile[0])) {
-            validCardIndex = i;
-            break;
-        }
+    if (readIntegerInput(num)) {
+        cout << "You entered: " << num << "\n";
+    }
+    else {
+        cout << "Invalid input! Not an integer.\n";
     }
 
-    if (validCardIndex >= 0) {
-        cout << "\nPlaying card at index " << validCardIndex << "...\n";
-        playCard(game, 0, validCardIndex);
-
-        cout << "\nNew top card: ";
-        printCard(game.discardPile[game.discardSize - 1]);
-        cout << "\n\n";
-
-        cout << "Player hand after playing:\n";
-        printPlayerHand(game, 0);
+    cout << "\nEnter another integer: ";
+    if (readIntegerInput(num)) {
+        cout << "You entered: " << num << "\n";
+    }
+    else {
+        cout << "Invalid input! Not an integer.\n";
     }
 
     return 0;
