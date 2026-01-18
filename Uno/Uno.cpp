@@ -173,12 +173,10 @@ void shuffleDeck(GameState& game) {
 
 // Deal starting cards to all players and set first discard card
 void dealCards(GameState& game) {
-    // Initialize all players
     for (int p = 0; p < game.numPlayers; p++) {
         game.players[p].cardCount = 0;
         game.players[p].saidUno = false;
 
-        // Deal 7 cards to each player
         for (int i = 0; i < STARTING_HAND_SIZE; i++) {
             if (game.deckSize > 0) {
                 game.deckSize = game.deckSize - 1;
@@ -188,7 +186,6 @@ void dealCards(GameState& game) {
         }
     }
 
-    // Place first card on discard pile
     game.discardSize = 0;
     if (game.deckSize > 0) {
         game.deckSize = game.deckSize - 1;
@@ -209,31 +206,80 @@ void printPlayerHand(const GameState& game, int playerIndex) {
     cout << "\n";
 }
 
+// Check if a card can be played on top of another card
+bool isValidPlay(const Card& card, const Card& topCard) {
+    if (card.color == COLOR_WILD) {
+        return true;
+    }
+
+    if (card.color == topCard.color) {
+        return true;
+    }
+
+    if (card.value == topCard.value) {
+        return true;
+    }
+
+    return false;
+}
+
+// Draw one card from deck for a player
+void drawCard(GameState& game, int playerIndex) {
+    // Check if deck is empty - reshuffle discard pile
+    if (game.deckSize == 0) {
+        cout << "Deck empty! Reshuffling discard pile...\n";
+
+        // Move all cards except top card from discard to deck
+        for (int i = 0; i < game.discardSize - 1; i++) {
+            game.deck[game.deckSize] = game.discardPile[i];
+            game.deckSize = game.deckSize + 1;
+        }
+
+        // Keep only top card in discard pile
+        game.discardPile[0] = game.discardPile[game.discardSize - 1];
+        game.discardSize = 1;
+
+        // Shuffle the deck
+        shuffleDeck(game);
+    }
+
+    // Draw card if deck has cards and player has space
+    if (game.deckSize > 0 && game.players[playerIndex].cardCount < MAX_HAND_SIZE) {
+        game.deckSize = game.deckSize - 1;
+        game.players[playerIndex].hand[game.players[playerIndex].cardCount] = game.deck[game.deckSize];
+        game.players[playerIndex].cardCount = game.players[playerIndex].cardCount + 1;
+
+        cout << "Drew: ";
+        printCard(game.players[playerIndex].hand[game.players[playerIndex].cardCount - 1]);
+        cout << "\n";
+    }
+}
+
 int main() {
     srand(time(0));
 
     GameState game;
     game.deckSize = 0;
     game.discardSize = 0;
-    game.numPlayers = 3;
-    game.currentPlayer = 0;
-    game.clockwise = true;
+    game.numPlayers = 2;
 
     initializeDeck(game);
     shuffleDeck(game);
     dealCards(game);
 
-    cout << "=== UNO Game - Cards Dealt ===\n\n";
-    cout << "Starting card: ";
-    printCard(game.discardPile[0]);
-    cout << "\n\n";
+    cout << "=== Draw Card Test ===\n\n";
+    cout << "Player 1 initial hand:\n";
+    printPlayerHand(game, 0);
 
-    for (int p = 0; p < game.numPlayers; p++) {
-        printPlayerHand(game, p);
-        cout << "\n";
-    }
+    cout << "\nDrawing 3 cards...\n";
+    drawCard(game, 0);
+    drawCard(game, 0);
+    drawCard(game, 0);
 
-    cout << "Cards remaining in deck: " << game.deckSize << "\n";
+    cout << "\nPlayer 1 hand after drawing:\n";
+    printPlayerHand(game, 0);
+
+    cout << "\nCards remaining in deck: " << game.deckSize << "\n";
 
     return 0;
 }
