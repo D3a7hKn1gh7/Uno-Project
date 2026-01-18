@@ -74,6 +74,7 @@ void saveGame(const GameState& game);
 bool loadGame(GameState& game);
 void playGame(GameState& game);
 void displayMenu();
+void runGame();
 char getColorChar(int color);
 int getColorFromChar(char c);
 
@@ -598,9 +599,8 @@ void displayMenu() {
     cout << "Choose option: ";
 }
 
-int main() {
-    srand(time(0));
-
+// Run the main game application
+void runGame() {
     while (true) {
         displayMenu();
 
@@ -650,6 +650,10 @@ int main() {
             cout << "Invalid option! Please choose 1, 2, or 3.\n";
         }
     }
+}
 
+int main() {
+    srand(time(0));
+    runGame();
     return 0;
 }
