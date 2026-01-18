@@ -332,6 +332,74 @@ bool readIntegerInput(int& result) {
     }
 }
 
+void playerTurn(GameState& game) {
+    int currentPlayerIdx = game.currentPlayer;
+    Card topCard = game.discardPile[game.discardSize - 1];
+
+    cout << "\n--- Player " << (currentPlayerIdx + 1) << "'s turn ---\n";
+    cout << "Current card: ";
+    printCard(topCard);
+    cout << "\n\n";
+
+    printPlayerHand(game, currentPlayerIdx);
+
+    // Check if player has any valid cards
+    bool hasValidCard = false;
+    for (int i = 0; i < game.players[currentPlayerIdx].cardCount; i++) {
+        if (isValidPlay(game.players[currentPlayerIdx].hand[i], topCard)) {
+            hasValidCard = true;
+            break;
+        }
+    }
+
+    // No valid cards - must draw
+    if (!hasValidCard) {
+        cout << "No valid cards. Drawing from deck...\n";
+        int oldCount = game.players[currentPlayerIdx].cardCount;
+        drawCard(game, currentPlayerIdx);
+
+        // Check if drawn card can be played
+        if (game.players[currentPlayerIdx].cardCount > oldCount) {
+            Card drawnCard = game.players[currentPlayerIdx].hand[game.players[currentPlayerIdx].cardCount - 1];
+
+            if (isValidPlay(drawnCard, topCard)) {
+                cout << "You can play this card. Play it? (1=Yes, 0=No): ";
+                int choice;
+
+                if (readIntegerInput(choice) && choice == 1) {
+                    playCard(game, currentPlayerIdx, game.players[currentPlayerIdx].cardCount - 1);
+                    return;
+                }
+            }
+        }
+
+        game.currentPlayer = getNextPlayer(game);
+        return;
+    }
+
+    // Player has valid cards - let them choose
+    cout << "Choose card index: ";
+    int choice;
+
+    if (!readIntegerInput(choice)) {
+        cout << "Invalid input! Please enter a number.\n";
+        return;
+    }
+
+    if (choice < 0 || choice >= game.players[currentPlayerIdx].cardCount) {
+        cout << "Invalid choice!\n";
+        return;
+    }
+
+    if (!isValidPlay(game.players[currentPlayerIdx].hand[choice], topCard)) {
+        cout << "Invalid card! Choose again.\n";
+        return;
+    }
+
+    playCard(game, currentPlayerIdx, choice);
+    game.currentPlayer = getNextPlayer(game);
+}
+
 int main() {
     srand(time(0));
 
