@@ -534,24 +534,54 @@ void displayMenu() {
 int main() {
     srand(time(0));
 
-    cout << "=== Input Validation Test ===\n\n";
+    while (true) {
+        displayMenu();
 
-    cout << "Enter an integer: ";
-    int num;
+        int choice;
+        if (!readIntegerInput(choice)) {
+            cout << "Invalid input! Please enter a number.\n";
+            continue;
+        }
 
-    if (readIntegerInput(num)) {
-        cout << "You entered: " << num << "\n";
-    }
-    else {
-        cout << "Invalid input! Not an integer.\n";
-    }
+        if (choice == 1) {
+            // New game
+            GameState game;
+            game.deckSize = 0;
+            game.discardSize = 0;
+            game.currentPlayer = 0;
+            game.clockwise = true;
 
-    cout << "\nEnter another integer: ";
-    if (readIntegerInput(num)) {
-        cout << "You entered: " << num << "\n";
-    }
-    else {
-        cout << "Invalid input! Not an integer.\n";
+            cout << "Enter number of players (2-4): ";
+            if (!readIntegerInput(game.numPlayers)) {
+                cout << "Invalid input!\n";
+                continue;
+            }
+
+            if (game.numPlayers < 2 || game.numPlayers > MAX_PLAYERS) {
+                cout << "Invalid number of players! Must be 2-4.\n";
+                continue;
+            }
+
+            initializeDeck(game);
+            shuffleDeck(game);
+            dealCards(game);
+
+            playGame(game);
+        }
+        else if (choice == 2) {
+            // Continue game
+            GameState game;
+            if (loadGame(game)) {
+                playGame(game);
+            }
+        }
+        else if (choice == 3) {
+            cout << "Thanks for playing UNO!\n";
+            break;
+        }
+        else {
+            cout << "Invalid option! Please choose 1, 2, or 3.\n";
+        }
     }
 
     return 0;
