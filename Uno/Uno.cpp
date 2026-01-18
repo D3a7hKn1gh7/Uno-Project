@@ -113,7 +113,14 @@ int getColorFromChar(char c) {
 
 // Print a single card to console
 void printCard(const Card& card) {
-    cout << getColorChar(card.color);
+
+    // For Wild cards, always print 'W' for the card itself
+    if (card.value == VALUE_WILD || card.value == VALUE_WILD_DRAW_FOUR) {
+        cout << "W";
+    }
+    else {
+        cout << getColorChar(card.color);
+    }
 
     if (card.value <= 9) {
         cout << card.value;
@@ -129,9 +136,17 @@ void printCard(const Card& card) {
     }
     else if (card.value == VALUE_WILD) {
         cout << "ild";
+        // Show chosen color after Wild
+        if (card.color != COLOR_WILD) {
+            cout << " - " << getColorChar(card.color);
+        }
     }
     else if (card.value == VALUE_WILD_DRAW_FOUR) {
         cout << "+4";
+        // Show chosen color after Wild+4
+        if (card.color != COLOR_WILD) {
+            cout << " - " << getColorChar(card.color);
+        }
     }
 }
 
