@@ -5,7 +5,6 @@
 * Main file for UNO card game implementation
 */
 
-
 #include <iostream>
 #include <algorithm>
 #include <random>
@@ -271,7 +270,6 @@ void applyCardEffect(GameState& game, const Card& card) {
         game.clockwise = !game.clockwise;
         cout << "Reverse! Direction changed!\n";
 
-        // In 2-player game, Reverse acts like Skip
         if (game.numPlayers == 2) {
             game.currentPlayer = getNextPlayer(game);
         }
@@ -282,8 +280,6 @@ void applyCardEffect(GameState& game, const Card& card) {
 
         drawCard(game, nextPlayer);
         drawCard(game, nextPlayer);
-
-        // Fixed: Player does NOT skip turn after drawing
     }
     else if (card.value == VALUE_WILD_DRAW_FOUR) {
         int nextPlayer = getNextPlayer(game);
@@ -292,9 +288,42 @@ void applyCardEffect(GameState& game, const Card& card) {
         for (int i = 0; i < 4; i++) {
             drawCard(game, nextPlayer);
         }
-
-        // Fixed: Player does NOT skip turn after drawing
     }
+}
+
+// Play a card from player's hand
+void playCard(GameState& game, int playerIndex, int cardIndex) {
+    Card playedCard = game.players[playerIndex].hand[cardIndex];
+
+    // Add card to discard pile
+    game.discardPile[game.discardSize] = playedCard;
+    game.discardSize = game.discardSize + 1;
+
+    // Remove card from player's hand by shifting remaining cards
+    for (int i = cardIndex; i < game.players[playerIndex].cardCount - 1; i++) {
+        game.players[playerIndex].hand[i] = game.players[playerIndex].hand[i + 1];
+    }
+    game.players[playerIndex].cardCount = game.players[playerIndex].cardCount - 1;
+
+    cout << "You played: ";
+    printCard(playedCard);
+    cout << "\n";
+
+    // Handle Wild cards - player chooses new color
+    if (playedCard.color == COLOR_WILD) {
+        cout << "Choose new color (R/G/B/Y): ";
+        char colorChoice;
+        cin >> colorChoice;
+
+        // Convert to color integer (case insensitive)
+        game.discardPile[game.discardSize - 1].color = getColorFromChar(colorChoice);
+    }
+
+    // Apply special card effects
+    applyCardEffect(game, playedCard);
+
+    // Reset UNO declaration
+    game.players[playerIndex].saidUno = false;
 }
 
 int main() {
@@ -303,7 +332,7 @@ int main() {
     GameState game;
     game.deckSize = 0;
     game.discardSize = 0;
-    game.numPlayers = 3;
+    game.numPlayers = 2;
     game.currentPlayer = 0;
     game.clockwise = true;
 
@@ -311,41 +340,33 @@ int main() {
     shuffleDeck(game);
     dealCards(game);
 
-    cout << "=== Special Card Effects Test ===\n\n";
+    cout << "=== Play Card Test ===\n\n";
+    cout << "Top card: ";
+    printCard(game.discardPile[0]);
+    cout << "\n\n";
 
-    // Test Skip card
-    Card skipCard;
-    skipCard.color = COLOR_RED;
-    skipCard.value = VALUE_SKIP;
+    printPlayerHand(game, 0);
 
-    cout << "Current player: " << (game.currentPlayer + 1) << "\n";
-    cout << "Playing: ";
-    printCard(skipCard);
-    cout << "\n";
-    applyCardEffect(game, skipCard);
-    cout << "After effect, current player: " << (game.currentPlayer + 1) << "\n\n";
+    // Find first valid card
+    int validCardIndex = -1;
+    for (int i = 0; i < game.players[0].cardCount; i++) {
+        if (isValidPlay(game.players[0].hand[i], game.discardPile[0])) {
+            validCardIndex = i;
+            break;
+        }
+    }
 
-    // Test Reverse card
-    Card reverseCard;
-    reverseCard.color = COLOR_BLUE;
-    reverseCard.value = VALUE_REVERSE;
+    if (validCardIndex >= 0) {
+        cout << "\nPlaying card at index " << validCardIndex << "...\n";
+        playCard(game, 0, validCardIndex);
 
-    cout << "Playing: ";
-    printCard(reverseCard);
-    cout << "\n";
-    applyCardEffect(game, reverseCard);
-    cout << "\n";
+        cout << "\nNew top card: ";
+        printCard(game.discardPile[game.discardSize - 1]);
+        cout << "\n\n";
 
-    // Test Draw Two card
-    Card drawTwoCard;
-    drawTwoCard.color = COLOR_GREEN;
-    drawTwoCard.value = VALUE_DRAW_TWO;
-
-    cout << "Playing: ";
-    printCard(drawTwoCard);
-    cout << "\n";
-    applyCardEffect(game, drawTwoCard);
-    cout << "\n";
+        cout << "Player hand after playing:\n";
+        printPlayerHand(game, 0);
+    }
 
     return 0;
 }
