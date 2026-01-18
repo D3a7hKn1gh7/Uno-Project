@@ -2,7 +2,6 @@
 * Angel Pisarev group 2
 * 3MI0600689
 * GCC
-* Main file for UNO card game implementation
 */
 
 #include <iostream>
@@ -33,31 +32,32 @@ const int VALUE_DRAW_TWO = 12;
 const int VALUE_WILD = 13;
 const int VALUE_WILD_DRAW_FOUR = 14;
 
-// Card structure
+// Card structure - represents a single UNO card
 struct Card {
-    int color;
-    int value;
+    int color;  // 0=Red, 1=Green, 2=Blue, 3=Yellow, 4=Wild
+    int value;  // 0-9 for numbers, 10=Skip, 11=Reverse, 12=+2, 13=Wild, 14=Wild+4
 };
 
-// Player structure
+// Player structure - represents a single player's state
 struct Player {
-    Card hand[MAX_HAND_SIZE];
-    int cardCount;
-    bool saidUno;
+    Card hand[MAX_HAND_SIZE];  // Cards in player's hand
+    int cardCount;              // Number of cards currently held
+    bool saidUno;               // Whether player declared UNO
 };
 
-// GameState structure
+// GameState structure - represents the complete game state
 struct GameState {
-    Card deck[MAX_DECK_SIZE];
-    int deckSize;
-    Card discardPile[MAX_DECK_SIZE];
-    int discardSize;
-    Player players[MAX_PLAYERS];
-    int numPlayers;
-    int currentPlayer;
-    bool clockwise;
+    Card deck[MAX_DECK_SIZE];           // Draw pile
+    int deckSize;                        // Number of cards in deck
+    Card discardPile[MAX_DECK_SIZE];    // Played cards pile
+    int discardSize;                     // Number of cards in discard pile
+    Player players[MAX_PLAYERS];         // All players
+    int numPlayers;                      // Number of players in game
+    int currentPlayer;                   // Index of current player
+    bool clockwise;                      // Direction of play
 };
 
+// Function declarations
 void initializeDeck(GameState& game);
 void shuffleDeck(GameState& game);
 void dealCards(GameState& game);
@@ -77,7 +77,7 @@ void displayMenu();
 char getColorChar(int color);
 int getColorFromChar(char c);
 
-// Convert color integer to character 
+// Convert color integer to character representation
 char getColorChar(int color) {
     if (color == COLOR_RED) {
         return 'R';
@@ -94,7 +94,7 @@ char getColorChar(int color) {
     return 'W';
 }
 
-// Convert character to color integer
+// Convert character to color integer (case insensitive)
 int getColorFromChar(char c) {
     if (c == 'R' || c == 'r') {
         return COLOR_RED;
@@ -111,7 +111,7 @@ int getColorFromChar(char c) {
     return COLOR_WILD;
 }
 
-// Print a single card
+// Print a single card to console
 void printCard(const Card& card) {
     cout << getColorChar(card.color);
 
@@ -192,7 +192,7 @@ void initializeDeck(GameState& game) {
     }
 }
 
-// Shuffle the deck
+// Shuffle the deck using random algorithm
 void shuffleDeck(GameState& game) {
     random_device rd;
     mt19937 generator(rd());
@@ -323,6 +323,7 @@ void applyCardEffect(GameState& game, const Card& card) {
         drawCard(game, nextPlayer);
         drawCard(game, nextPlayer);
 
+        //Player does NOT skip turn after drawing
     }
     else if (card.value == VALUE_WILD_DRAW_FOUR) {
         int nextPlayer = getNextPlayer(game);
@@ -332,6 +333,7 @@ void applyCardEffect(GameState& game, const Card& card) {
             drawCard(game, nextPlayer);
         }
 
+        //Player does NOT skip turn after drawing
     }
 }
 
@@ -376,9 +378,8 @@ bool readIntegerInput(int& result) {
         return true;
     }
     else {
-        
         cin.clear(); // Clear the error state of cin
-        cin.ignore(10000, '\n'); // Ignore the invalid input in the buffer 
+        cin.ignore(10000, '\n'); // Ignore the invalid input in the buffer
         return false;
     }
 }
